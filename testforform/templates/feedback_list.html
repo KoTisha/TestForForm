@@ -8,7 +8,9 @@
 
 
 {% block content %}
-
+    {% if user.is_authenticated %}
+      {{ perm }}
+    {% endif %}
 
 
 {% endblock %}

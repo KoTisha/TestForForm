@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import Group
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, FormView
 from django.views.generic.base import View
@@ -35,6 +36,7 @@ class LoginView(FormView):
             user = authenticate(self.request, username=self.request.POST['username'], password=self.request.POST['password'])
             if user is not None:
                 login(request, form.get_user())
+                return redirect('feedback_list_page')
 
         return super(LoginView, self).form_valid(form)
 
@@ -63,23 +65,27 @@ class RegisterView(CreateView):
 
 
 
-class FeedbackWriteView(CreateView):
+class FeedbackWriteView(PermissionRequiredMixin, CreateView):
+    permission_required = 'core.add_feedback'
     template_name = "feedback_write.html"
 
     def get(self, request):
-        user = request.user
 
+        return render(request, self.template_name, self.extra_context)
+
+class FeedbackListView(
+    PermissionRequiredMixin,
+    ListView):
+    permission_required = ('core.view_feedback','core.change_feedback')
+    template_name = "feedback_list.html"
+
+    def get(self, request):
+        # user = request.user
         # self.extra_context = {'perm': request.user.get_group_permissions()}
         # if request.user.has_perm('core.add_feedback'):
         #     print("True")
         # else:
         #     print("False")
-        return render(request, self.template_name, self.extra_context)
-
-class FeedbackListView(ListView):
-    template_name = "feedback_list.html"
-
-    def get(self, request):
         return render(request, self.template_name, self.extra_context)
 
 
