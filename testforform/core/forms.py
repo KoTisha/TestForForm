@@ -1,12 +1,16 @@
 from django import forms
-from .models import Feedback, Person
+from .models import Feedback
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 class UserRegistrationForm(UserCreationForm):
     class Meta:
-        model = Person
+        model = User
         fields = ('username', 'first_name', 'email')
+
+    # def save(self, *args, **kwargs):
+    #     form =
+    #     return super(UserRegistrationForm, self).save(*args, **kwargs)
 
 
 
