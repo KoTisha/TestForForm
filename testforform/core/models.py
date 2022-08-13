@@ -10,17 +10,17 @@ class Person(User):
 
     class Meta():
         proxy = True
-        permissions = [
+        permissions = (
             ("can_create_feedback", "Can create feedback messenges"),
-        ]
+        )
 
 class Manager(User):
     class Meta():
         proxy = True
-        permissions = [
+        permissions = (
             ("can_check_feedback", "Can checking feedback from Users"),
             ("can_work_with_feedback", "Can edit feedback"),
-        ]
+        )
 
 class Feedback(models.Model):
     id = models.AutoField(primary_key=True)

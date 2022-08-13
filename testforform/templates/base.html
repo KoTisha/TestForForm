@@ -1,0 +1,26 @@
+<!doctype html>
+{% load static %}
+<html lang="en">
+  <head>
+
+    <title>
+
+        {% block title %}
+        {% endblock %}
+
+    </title>
+
+    {% block uload %}
+    {% endblock %}
+
+
+
+  </head>
+  <body>
+  
+    HELLO, {{ user }}
+    {% block content %}
+    {% endblock %}
+
+  </body>
+</html>
