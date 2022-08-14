@@ -19,3 +19,9 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
         fields = ('title', 'message', 'file', )
+
+class FeedbackCheckForm(forms.ModelForm):
+
+    class Meta:
+        model = Feedback
+        fields = ('isInWork',)

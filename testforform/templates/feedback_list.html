@@ -17,7 +17,10 @@
 </p>  <a href="{{ MEDIA_URL }}{{ feedback.file }}">{{ feedback.file }}</a>
 </p>  {{ feedback.creationTime }}
 </p>
-</p>  {{ feedback.isInWork }}
+<form method="POST">{% csrf_token %}
+</p>  В работе? {{ form.isInWork }}
+<button type="submit" name="{{ feedback.id }}_button">Save</button>
+</form>
 
 <hr>
 
