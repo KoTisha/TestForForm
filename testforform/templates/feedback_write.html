@@ -8,8 +8,16 @@
 
 
 {% block content %}
-    {% if user.is_authenticated %}
-      {{ perm }}
-    {% endif %}
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.title.label_tag }}
+        {{ form.title }}
+        {{ form.message.label_tag }}
+        {{ form.message }}
+        {{ form.file.label_tag }}
+        {{ form.file }}
+        <button type="submit">Save</button>
+
+    </form>
 
 {% endblock %}

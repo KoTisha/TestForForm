@@ -8,9 +8,19 @@
 
 
 {% block content %}
-    {% if user.is_authenticated %}
-      {{ perm }}
-    {% endif %}
 
+    {% for feedback in feedbackList%}
+
+</p>  {{ feedback.author}}
+</p>  {{ feedback.title }}
+</p>  {{ feedback.message }}
+</p>  <a href="{{ MEDIA_URL }}{{ feedback.file }}">{{ feedback.file }}</a>
+</p>  {{ feedback.creationTime }}
+</p>
+</p>  {{ feedback.isInWork }}
+
+<hr>
+
+    {% endfor %}
 
 {% endblock %}

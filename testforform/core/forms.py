@@ -8,11 +8,6 @@ class UserRegistrationForm(UserCreationForm):
         model = User
         fields = ('username', 'first_name', 'email')
 
-    # def save(self, *args, **kwargs):
-    #     form =
-    #     return super(UserRegistrationForm, self).save(*args, **kwargs)
-
-
 
 class UserLoginForm(AuthenticationForm):
     class Meta:
