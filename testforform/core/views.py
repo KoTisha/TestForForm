@@ -1,4 +1,3 @@
-from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.utils import timezone
 from django.shortcuts import render, redirect
@@ -11,9 +10,12 @@ from django.views.generic.edit import CreateView, FormView
 from django.views.generic.base import View
 from .models import Feedback, SubmitUser
 from .forms import *
+from .tasks import send_email
+from testforform.celery import app
 
 
 # Create your views here.
+
 
 class LogoutView(View):
     success_url = reverse_lazy('login_page')
@@ -83,7 +85,6 @@ class FeedbackWriteView(PermissionRequiredMixin, CreateView):
     def get(self, request):
         return render(request, self.template_name, self.extra_context)
 
-
     def post(self, request):
         form = self.form_class(request.POST, request.FILES)
         submittingUser = SubmitUser.objects.get(user = request.user.id)
@@ -95,7 +96,7 @@ class FeedbackWriteView(PermissionRequiredMixin, CreateView):
 
         if timeDifference > 1:
             if form.is_valid():
-                send_email(request)
+                send_email_async(request)
                 savingForm = form.save(commit=False)
                 savingForm.author = request.user
                 savingForm.save()
@@ -124,6 +125,7 @@ class FeedbackListView(PermissionRequiredMixin, ListView):
     def get(self, request):
         return render(request, self.template_name, self.extra_context)
 
+
     def post(self, request):
         for feedback in self.extra_context['feedbackList']:
             buttonName = str(feedback.id) + '_button'
@@ -140,19 +142,17 @@ class FeedbackListView(PermissionRequiredMixin, ListView):
         messages.error(request, 'Не удалось')
 
 
-def send_email(request):
+
+def send_email_async(request):
     message = request.POST['message'] + ' from: ' + request.user.email
-    email = EmailMessage(
-        request.POST['title'],
-        message,
-        'admin@example.com',
-        ['admin@example.com'],
-    )
+    title = request.POST['title']
+    file = None
     if request.FILES:
-        try:
-            attachingFile = request.FILES['file']
-            email.attach(attachingFile.name, attachingFile.read(),attachingFile.content_type)
-        except:
-            return "Attachment error"
-    email.send()
-    return "OK!"
+        file = request.FILES['file']
+    send_email.delay(title,message, file)
+    i=app.control.inspect()
+    print(i.scheduled())
+    print(i.active())
+    print(i.reserved())
+
+
