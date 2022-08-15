@@ -11,14 +11,15 @@
 
     {% for feedback in feedbackList%}
 
-</p>  {{ feedback.author}}
-</p>  {{ feedback.title }}
-</p>  {{ feedback.message }}
-</p>  <a href="{{ MEDIA_URL }}{{ feedback.file }}">{{ feedback.file }}</a>
-</p>  {{ feedback.creationTime }}
+</p>  Автор: {{ feedback.author}}
+</p>  Заголовок: {{ feedback.title }}
+</p>  Сообщение: {{ feedback.message }}
+</p>  Файл: <a href="{{ MEDIA_URL }}{{ feedback.file }}">{{ feedback.file }}</a>
+</p>  Дата создания обращения: {{ feedback.creationTime }}
 </p>
 <form method="POST">{% csrf_token %}
-</p>  В работе? {{ form.isInWork }}
+</p>  Ответил? {% if feedback.isInWork %} ДА {% else %} НЕТ {% endif %}
+</p>{{ form.isInWork }}
 <button type="submit" name="{{ feedback.id }}_button">Save</button>
 </form>
 

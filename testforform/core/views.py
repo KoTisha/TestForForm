@@ -1,3 +1,4 @@
+from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.utils import timezone
 from django.shortcuts import render, redirect
@@ -18,6 +19,7 @@ class LogoutView(View):
     success_url = reverse_lazy('login_page')
     def get(self, request):
         logout(request)
+        messages.success(request, 'Успешный выход!')
         return redirect('login_page')
 
 
@@ -37,10 +39,10 @@ class LoginView(FormView):
             user = authenticate(self.request, username=self.request.POST['username'], password=self.request.POST['password'])
             if user is not None:
                 login(request, form.get_user())
+                messages.success(request, 'Залогинено!')
                 if request.user.has_perm('core.view_feedback'):
                     return redirect('feedback_list_page')
 
-        messages.error(request, 'Не удалось')
         return super(LoginView, self).form_valid(form)
 
 
@@ -62,6 +64,7 @@ class RegisterView(CreateView):
             user_group = Group.objects.get(name='User')
             user.groups.add(user_group)
             user.save()
+            messages.success(request, 'Реристрация прошла успешно!')
             return redirect(self.success_url)
         else:
             messages.error(request, 'Форма неверна')
@@ -84,16 +87,21 @@ class FeedbackWriteView(PermissionRequiredMixin, CreateView):
     def post(self, request):
         form = self.form_class(request.POST, request.FILES)
         submittingUser = SubmitUser.objects.get(user = request.user.id)
-        timeDifference = timezone.now() - submittingUser.lastSubmitDate
+        try:
+            timeDifference = timezone.now() - submittingUser.lastSubmitDate
+            timeDifference = timeDifference.total_seconds()
+        except:
+            timeDifference = 86401
 
-        if timeDifference.total_seconds() > 86400:
-
+        if timeDifference > 1:
             if form.is_valid():
+                send_email(request)
                 savingForm = form.save(commit=False)
                 savingForm.author = request.user
                 savingForm.save()
                 SubmitUser.objects.filter(user=request.user.id).update(lastSubmitDate=timezone.now())
-                return redirect(self.success_url)
+                messages.success(request, 'Сохранено!')
+                return render(request, self.template_name, self.extra_context)
             else:
                 messages.error(request, 'Форма неверна')
                 return render(request, self.template_name, self.extra_context)
@@ -119,16 +127,35 @@ class FeedbackListView(PermissionRequiredMixin, ListView):
     def post(self, request):
         for feedback in self.extra_context['feedbackList']:
             buttonName = str(feedback.id) + '_button'
-
             if buttonName in request.POST:
-                print(feedback)
                 form = self.form_class(request.POST, instance=feedback)
+
                 if form.is_valid():
                     savingForm = form.save(commit=False)
                     savingForm.save()
-                    return redirect(self.success_url)
+
+                    messages.success(request, 'Сохранено!')
+                    return render(request, self.template_name, self.extra_context)
 
         messages.error(request, 'Не удалось')
 
 
-
+def send_email(request):
+    messages.success(request, "начата функция")
+    message = request.POST['message'] + ' from: ' + request.user.email
+    email = EmailMessage(
+        request.POST['title'],
+        message,
+        'admin@example.com',
+        ['admin@example.com'],
+    )
+    if request.FILES:
+        try:
+            attachingFile = request.FILES['file']
+            email.attach(attachingFile.name, attachingFile.read(),attachingFile.content_type)
+            messages.success(request, "файлы успешно прикреплены")
+        except:
+            return "Attachment error"
+    email.send()
+    messages.success(request, "письмо отправлено!")
+    return "OK!"
